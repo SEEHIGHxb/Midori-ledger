@@ -60,9 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
     headerDatePicker.addEventListener('change', (e) => {
       const newDate = e.target.value;
       if (newDate) {
-        MidoriState.virtualDate = newDate;
-        processSchedules(newDate);
-        recalculateWalletBalances();
+        updateVirtualDate(newDate);
       }
     });
   }
@@ -216,7 +214,7 @@ function renderDashboardMetrics() {
   let monthlyExpense = 0;
 
   MidoriState.transactions.forEach(tx => {
-    if (tx.date > MidoriState.virtualDate) return; // Strict time-travel rollback filter!
+    if (tx.scheduledId && tx.date > MidoriState.virtualDate) return; // Strict time-travel rollback filter!
     const txDate = new Date(tx.date);
     if (txDate.getMonth() === currentMonth && txDate.getFullYear() === currentYear) {
       // Find wallet currency
@@ -283,7 +281,7 @@ function renderDashboardBudgetAlerts(month, year, baseCurrency) {
     let spent = 0;
     
     MidoriState.transactions.forEach(tx => {
-      if (tx.date > MidoriState.virtualDate) return; // Strict time-travel rollback filter!
+      if (tx.scheduledId && tx.date > MidoriState.virtualDate) return; // Strict time-travel rollback filter!
       if (tx.type === 'expense' && tx.categoryId === cat.id) {
         const txDate = new Date(tx.date);
         if (txDate.getMonth() === month && txDate.getFullYear() === year) {
@@ -473,7 +471,7 @@ function renderBudgets() {
   budgetedCats.forEach(cat => {
     let spent = 0;
     MidoriState.transactions.forEach(tx => {
-      if (tx.date > MidoriState.virtualDate) return; // Strict time-travel rollback filter!
+      if (tx.scheduledId && tx.date > MidoriState.virtualDate) return; // Strict time-travel rollback filter!
       if (tx.categoryId === cat.id && tx.type === 'expense') {
         const txDate = new Date(tx.date);
         if (budgetPeriod === 'monthly') {
@@ -615,7 +613,7 @@ function renderTags() {
   MidoriState.categories.forEach(cat => {
     let spent = 0;
     MidoriState.transactions.forEach(tx => {
-      if (tx.date > MidoriState.virtualDate) return; // Strict time-travel rollback filter!
+      if (tx.scheduledId && tx.date > MidoriState.virtualDate) return; // Strict time-travel rollback filter!
       if (tx.categoryId === cat.id) {
         const txDate = new Date(tx.date);
         if (txDate.getMonth() === month && txDate.getFullYear() === year) {
@@ -691,7 +689,7 @@ function renderLedger() {
 
   // Filter
   const filtered = MidoriState.transactions.filter(tx => {
-    if (tx.date > MidoriState.virtualDate) return false; // Strict time-travel rollback filter!
+    if (tx.scheduledId && tx.date > MidoriState.virtualDate) return false; // Strict time-travel rollback filter!
     const matchesSearch = tx.title.toLowerCase().includes(searchVal) || (tx.note && tx.note.toLowerCase().includes(searchVal));
     const matchesWallet = filterWalletId === 'all' || tx.walletId === filterWalletId;
     const matchesTag = filterTagId === 'all' || tx.categoryId === filterTagId;
@@ -1319,25 +1317,19 @@ function triggerMonthTravel(months) {
   const current = new Date(MidoriState.virtualDate);
   current.setMonth(current.getMonth() + months);
   const newDateStr = current.toISOString().split('T')[0];
-  MidoriState.virtualDate = newDateStr;
-  processSchedules(newDateStr);
-  recalculateWalletBalances();
+  updateVirtualDate(newDateStr);
 }
 
 function triggerYearTravel(years) {
   const current = new Date(MidoriState.virtualDate);
   current.setFullYear(current.getFullYear() + years);
   const newDateStr = current.toISOString().split('T')[0];
-  MidoriState.virtualDate = newDateStr;
-  processSchedules(newDateStr);
-  recalculateWalletBalances();
+  updateVirtualDate(newDateStr);
 }
 
 function resetToCurrentDate() {
   const baseDateStr = '2026-05-20';
-  MidoriState.virtualDate = baseDateStr;
-  processSchedules(baseDateStr);
-  recalculateWalletBalances();
+  updateVirtualDate(baseDateStr);
 }
 
 function changeBaseCurrency(newCurr) {

@@ -544,7 +544,9 @@ function updateSchedule(schedId, updatedFields) {
 
 function deleteSchedule(schedId) {
   MidoriState.schedules = MidoriState.schedules.filter(s => s.id !== schedId);
+  MidoriState.transactions = MidoriState.transactions.filter(t => t.scheduledId !== schedId);
   saveState();
+  recalculateWalletBalances();
 }
 
 // Preferences
