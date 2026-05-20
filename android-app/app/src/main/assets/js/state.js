@@ -112,16 +112,16 @@ function resetToDefaultState() {
   
   // Set default categories
   MidoriState.categories = [
-    { id: 'cat_salary', name: 'Salary', type: 'income', color: '#2d5a27', icon: 'leaf', budget: null },
-    { id: 'cat_freelance', name: 'Freelance', type: 'income', color: '#8ba88f', icon: 'briefcase', budget: null },
-    { id: 'cat_investment', name: 'Investments', type: 'income', color: '#a2a86c', icon: 'trendUp', budget: null },
+    { id: 'cat_salary', name: 'Salary', type: 'income', color: '#2d5a27', icon: 'leaf', budget: null, yearlyBudget: null, includeInBudget: false },
+    { id: 'cat_freelance', name: 'Freelance', type: 'income', color: '#8ba88f', icon: 'briefcase', budget: null, yearlyBudget: null, includeInBudget: false },
+    { id: 'cat_investment', name: 'Investments', type: 'income', color: '#a2a86c', icon: 'trendUp', budget: null, yearlyBudget: null, includeInBudget: false },
     
-    { id: 'cat_food', name: 'Food', type: 'expense', color: '#5a7d5b', icon: 'utensils', budget: 50000 },
-    { id: 'cat_groceries', name: 'Groceries', type: 'expense', color: '#8bb38f', icon: 'shoppingCart', budget: 20000 },
-    { id: 'cat_rent', name: 'Rent', type: 'expense', color: '#5e665c', icon: 'home', budget: 120000 },
-    { id: 'cat_transport', name: 'Transport', type: 'expense', color: '#40563f', icon: 'car', budget: 15000 },
-    { id: 'cat_entertainment', name: 'Entertainment', type: 'expense', color: '#cfa87b', icon: 'film', budget: 30000 },
-    { id: 'cat_shopping', name: 'Shopping', type: 'expense', color: '#aabfa9', icon: 'shoppingBag', budget: 40000 }
+    { id: 'cat_food', name: 'Food', type: 'expense', color: '#5a7d5b', icon: 'utensils', budget: 50000, yearlyBudget: 600000, includeInBudget: true },
+    { id: 'cat_groceries', name: 'Groceries', type: 'expense', color: '#8bb38f', icon: 'shoppingCart', budget: 20000, yearlyBudget: 240000, includeInBudget: true },
+    { id: 'cat_rent', name: 'Rent', type: 'expense', color: '#5e665c', icon: 'home', budget: 120000, yearlyBudget: 1440000, includeInBudget: true },
+    { id: 'cat_transport', name: 'Transport', type: 'expense', color: '#40563f', icon: 'car', budget: 15000, yearlyBudget: 180000, includeInBudget: true },
+    { id: 'cat_entertainment', name: 'Entertainment', type: 'expense', color: '#cfa87b', icon: 'film', budget: 30000, yearlyBudget: 360000, includeInBudget: true },
+    { id: 'cat_shopping', name: 'Shopping', type: 'expense', color: '#aabfa9', icon: 'shoppingBag', budget: 40000, yearlyBudget: 480000, includeInBudget: true }
   ];
 
   // Set default Wallets
@@ -469,6 +469,8 @@ function deleteWallet(walletId) {
 function addCategory(category) {
   category.id = generateUUID();
   category.budget = category.budget ? Number(category.budget) : null;
+  category.yearlyBudget = category.yearlyBudget ? Number(category.yearlyBudget) : (category.budget ? category.budget * 12 : null);
+  category.includeInBudget = category.includeInBudget !== undefined ? !!category.includeInBudget : (category.type === 'expense');
   MidoriState.categories.push(category);
   saveState();
 }
@@ -478,6 +480,12 @@ function updateCategory(categoryId, updatedFields) {
   if (index !== -1) {
     if (updatedFields.budget !== undefined) {
       updatedFields.budget = updatedFields.budget ? Number(updatedFields.budget) : null;
+    }
+    if (updatedFields.yearlyBudget !== undefined) {
+      updatedFields.yearlyBudget = updatedFields.yearlyBudget ? Number(updatedFields.yearlyBudget) : null;
+    }
+    if (updatedFields.includeInBudget !== undefined) {
+      updatedFields.includeInBudget = !!updatedFields.includeInBudget;
     }
     MidoriState.categories[index] = { ...MidoriState.categories[index], ...updatedFields };
     saveState();

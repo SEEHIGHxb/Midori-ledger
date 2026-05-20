@@ -53,6 +53,19 @@ document.addEventListener('DOMContentLoaded', () => {
   syncTransactionCategoryOptions();
   syncScheduleCategoryOptions();
   populateDropdowns();
+
+  // 9. Interactive clickable date input
+  const headerDatePicker = document.getElementById('headerDatePicker');
+  if (headerDatePicker) {
+    headerDatePicker.addEventListener('change', (e) => {
+      const newDate = e.target.value;
+      if (newDate) {
+        MidoriState.virtualDate = newDate;
+        processSchedules(newDate);
+        recalculateWalletBalances();
+      }
+    });
+  }
 });
 
 // Sync time inputs
@@ -69,6 +82,10 @@ function handleStateChange() {
 function renderAllViews() {
   // Display virtual date in header
   document.getElementById('virtualDateDisplay').innerText = formatDisplayDate(MidoriState.virtualDate);
+  const headerDatePicker = document.getElementById('headerDatePicker');
+  if (headerDatePicker) {
+    headerDatePicker.value = MidoriState.virtualDate;
+  }
   
   // Re-run aggregate analytics & redraw graphs
   renderDashboardMetrics();
@@ -199,6 +216,7 @@ function renderDashboardMetrics() {
   let monthlyExpense = 0;
 
   MidoriState.transactions.forEach(tx => {
+    if (tx.date > MidoriState.virtualDate) return; // Strict time-travel rollback filter!
     const txDate = new Date(tx.date);
     if (txDate.getMonth() === currentMonth && txDate.getFullYear() === currentYear) {
       // Find wallet currency
@@ -245,15 +263,14 @@ function renderDashboardMetrics() {
   // 5. Render 30-Day Schedules Forecast on Dashboard
   renderDashboardForecast();
 }
-
 // Render Dashboard Budget Alerts
 function renderDashboardBudgetAlerts(month, year, baseCurrency) {
   const container = document.getElementById('dashboardBudgetAlerts');
   if (!container) return;
   container.innerHTML = '';
 
-  // Get active budgets
-  const budgetedCats = MidoriState.categories.filter(c => c.type === 'expense' && c.budget > 0);
+  // Get active budgets that are included and have monthly budget limits
+  const budgetedCats = MidoriState.categories.filter(c => c.type === 'expense' && c.includeInBudget && c.budget > 0);
   
   if (budgetedCats.length === 0) {
     container.innerHTML = `<div class="metric-desc" style="padding:10px 0;">No category budgets are set. Create a monthly limit tag in the Budgets tab!</div>`;
@@ -266,6 +283,7 @@ function renderDashboardBudgetAlerts(month, year, baseCurrency) {
     let spent = 0;
     
     MidoriState.transactions.forEach(tx => {
+      if (tx.date > MidoriState.virtualDate) return; // Strict time-travel rollback filter!
       if (tx.type === 'expense' && tx.categoryId === cat.id) {
         const txDate = new Date(tx.date);
         if (txDate.getMonth() === month && txDate.getFullYear() === year) {
@@ -287,7 +305,7 @@ function renderDashboardBudgetAlerts(month, year, baseCurrency) {
     
     if (ratio >= 100) {
       statusClass = 'status-danger';
-      alertMsg = 'EXCEEDED';
+      alertMsg = 'EXCEEDED!';
     } else if (ratio >= 80) {
       statusClass = 'status-danger';
       alertMsg = 'Warning (Near Cap)';
@@ -322,6 +340,7 @@ function renderDashboardBudgetAlerts(month, year, baseCurrency) {
   if (renderedAlertsCount === 0) {
     container.innerHTML = `<div class="metric-desc" style="padding:10px 0;">No active budget spending found for this virtual month.</div>`;
   }
+}
 }
 
 // Render Dashboard Forecast Widget
@@ -378,9 +397,13 @@ function renderWallets() {
     return;
   }
 
+  const baseCurrency = MidoriState.preferences.baseCurrency;
+
   MidoriState.wallets.forEach((wallet, index) => {
     const cardGradientIdx = (index % 3) + 1; // rotation of beautiful gradients
-    const formattedBalance = formatCurrency(wallet.balance, wallet.currency);
+    const convertedBalance = convertAmount(wallet.balance, wallet.currency, baseCurrency);
+    const formattedBaseBalance = formatCurrency(convertedBalance, baseCurrency);
+    const formattedNativeBalance = formatCurrency(wallet.balance, wallet.currency);
     
     // Simple mock credit card numbers for aesthetic realism
     const maskedCardNo = `**** **** **** ${1024 + index * 12}`;
@@ -394,9 +417,9 @@ function renderWallets() {
           </div>
           <span class="wallet-type-badge">${wallet.type}</span>
         </div>
-        <div class="wallet-balance-display">${formattedBalance}</div>
+        <div class="wallet-balance-display">${formattedBaseBalance}</div>
         <div class="wallet-card-footer">
-          <span>Currency: ${wallet.currency}</span>
+          <span>Native: ${formattedNativeBalance}</span>
           <div style="display:flex; align-items:center; gap:8px;">
             <button class="wallet-edit-btn" onclick="openEditWalletModal('${wallet.id}')" title="Edit Wallet" style="background:none; border:none; color:white; opacity:0.8; cursor:pointer; display:inline-flex; align-items:center; padding:4px; transition: opacity 0.2s;">
               <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4Z"></path></svg>
@@ -418,6 +441,13 @@ function triggerWalletDelete(id) {
   }
 }
 
+let budgetPeriod = 'monthly';
+
+function switchBudgetPeriod(period) {
+  budgetPeriod = period;
+  renderBudgets();
+}
+
 function renderBudgets() {
   const container = document.getElementById('budgetsContainer');
   if (!container) return;
@@ -428,13 +458,14 @@ function renderBudgets() {
   const month = vDate.getMonth();
   const year = vDate.getFullYear();
 
-  const budgetedCats = MidoriState.categories.filter(c => c.type === 'expense' && c.budget > 0);
+  // Show all expense categories that are marked included in budget panel
+  const budgetedCats = MidoriState.categories.filter(c => c.type === 'expense' && c.includeInBudget);
 
   if (budgetedCats.length === 0) {
     container.innerHTML = `
       <div class="empty-placeholder" style="grid-column: 1/-1;">
         <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
-        <span>No budgets set yet. To set a budget, create or edit a category tag with a limit in the Category Tags tab!</span>
+        <span>No budgets set yet. To set a budget, edit category tag limits below or check "Include in Budgets Panel" when creating/editing tags!</span>
       </div>
     `;
     return;
@@ -443,34 +474,50 @@ function renderBudgets() {
   budgetedCats.forEach(cat => {
     let spent = 0;
     MidoriState.transactions.forEach(tx => {
+      if (tx.date > MidoriState.virtualDate) return; // Strict time-travel rollback filter!
       if (tx.categoryId === cat.id && tx.type === 'expense') {
         const txDate = new Date(tx.date);
-        if (txDate.getMonth() === month && txDate.getFullYear() === year) {
-          const wallet = MidoriState.wallets.find(w => w.id === tx.walletId);
-          const currency = wallet ? wallet.currency : baseCurrency;
-          spent += convertAmount(tx.amount, currency, baseCurrency);
+        if (budgetPeriod === 'monthly') {
+          if (txDate.getMonth() === month && txDate.getFullYear() === year) {
+            const wallet = MidoriState.wallets.find(w => w.id === tx.walletId);
+            const currency = wallet ? wallet.currency : baseCurrency;
+            spent += convertAmount(tx.amount, currency, baseCurrency);
+          }
+        } else {
+          // Yearly
+          if (txDate.getFullYear() === year) {
+            const wallet = MidoriState.wallets.find(w => w.id === tx.walletId);
+            const currency = wallet ? wallet.currency : baseCurrency;
+            spent += convertAmount(tx.amount, currency, baseCurrency);
+          }
         }
       }
     });
 
-    const budgetLimit = cat.budget;
-    const ratio = (spent / budgetLimit) * 100;
+    const budgetLimit = budgetPeriod === 'monthly' ? cat.budget : cat.yearlyBudget;
+    const ratio = budgetLimit > 0 ? (spent / budgetLimit) * 100 : 0;
     
     let statusClass = 'status-safe';
     let warningText = 'Budget Normal';
     
-    if (ratio >= 100) {
-      statusClass = 'status-danger';
-      warningText = 'EXCEEDED!';
-    } else if (ratio >= 80) {
-      statusClass = 'status-danger';
-      warningText = 'Caution (Over 80%)';
-    } else if (ratio >= 60) {
-      statusClass = 'status-warn';
-      warningText = 'Approaching Warning';
+    if (budgetLimit > 0) {
+      if (ratio >= 100) {
+        statusClass = 'status-danger';
+        warningText = 'EXCEEDED!';
+      } else if (ratio >= 80) {
+        statusClass = 'status-danger';
+        warningText = 'Caution (Over 80%)';
+      } else if (ratio >= 60) {
+        statusClass = 'status-warn';
+        warningText = 'Approaching Warning';
+      }
+    } else {
+      warningText = 'No Limit Set';
     }
 
     const iconSvg = SVG_ICONS[cat.icon] || SVG_ICONS.leaf;
+    const limitDisplay = budgetLimit > 0 ? formatCurrency(budgetLimit, baseCurrency) : 'Not Set';
+    const periodLabel = budgetPeriod === 'monthly' ? 'Monthly' : 'Yearly';
 
     const html = `
       <div class="budget-card">
@@ -486,16 +533,16 @@ function renderBudgets() {
           </div>
           <div class="budget-limits-numbers">
             <div class="budget-spent">${formatCurrency(spent, baseCurrency)}</div>
-            <div class="budget-max">Limit: ${formatCurrency(budgetLimit, baseCurrency)}</div>
+            <div class="budget-max">${periodLabel} Limit: ${limitDisplay}</div>
           </div>
         </div>
         
         <div class="budget-progress-container">
           <div class="budget-progress-bar">
-            <div class="budget-progress-fill ${statusClass}" style="width: ${Math.min(100, ratio)}%"></div>
+            <div class="budget-progress-fill ${statusClass}" style="width: ${budgetLimit > 0 ? Math.min(100, ratio) : 0}%"></div>
           </div>
           <div style="display:flex; justify-content:space-between; font-size:10px; color:var(--text-muted); margin-top:2px;">
-            <span>${ratio.toFixed(0)}% utilized</span>
+            <span>${budgetLimit > 0 ? `${ratio.toFixed(0)}% utilized` : 'No limits assigned'}</span>
             <span class="${statusClass}" style="font-weight:600;">${warningText}</span>
           </div>
         </div>
@@ -503,8 +550,8 @@ function renderBudgets() {
         <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--border-color); padding-top:10px; font-size:12px;">
           <span style="color:var(--text-muted);">ID: ${cat.id.split('_')[1] || cat.id}</span>
           <div style="display:flex; align-items:center; gap:8px;">
-            <button class="wallet-edit-btn" onclick="openEditCategoryModal('${cat.id}')" title="Edit Budget" style="color:var(--text-muted); background:none; border:none; cursor:pointer; display:inline-flex; align-items:center; padding:2px;">
-              <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4Z"></path></svg>
+            <button class="wallet-edit-btn" onclick="openEditBudgetModal('${cat.id}')" title="Edit Budget Limits" style="color:var(--text-muted); background:none; border:none; cursor:pointer; display:inline-flex; align-items:center; padding:2px;">
+              <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg>
             </button>
             <button class="wallet-delete-btn" onclick="triggerCategoryDelete('${cat.id}')" title="Delete Tag" style="color:var(--text-muted); background:none; border:none; cursor:pointer; display:inline-flex; align-items:center; padding:2px;">
               <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
@@ -515,6 +562,35 @@ function renderBudgets() {
     `;
     container.insertAdjacentHTML('beforeend', html);
   });
+}
+
+function openEditBudgetModal(categoryId) {
+  const cat = MidoriState.categories.find(c => c.id === categoryId);
+  if (!cat) return;
+
+  document.getElementById('editBudgetCategoryId').value = cat.id;
+  document.getElementById('editBudgetCategoryLabel').innerText = `Category: ${cat.name}`;
+  document.getElementById('editBudgetMonthly').value = cat.budget !== null ? cat.budget : '';
+  document.getElementById('editBudgetYearly').value = cat.yearlyBudget !== null ? cat.yearlyBudget : '';
+
+  openModal('modalEditBudget');
+}
+
+function submitEditBudgetForm(e) {
+  e.preventDefault();
+
+  const id = document.getElementById('editBudgetCategoryId').value;
+  const monthlyVal = document.getElementById('editBudgetMonthly').value;
+  const yearlyVal = document.getElementById('editBudgetYearly').value;
+
+  const updatedFields = {
+    budget: monthlyVal ? Number(monthlyVal) : null,
+    yearlyBudget: yearlyVal ? Number(yearlyVal) : null
+  };
+
+  updateCategory(id, updatedFields);
+  closeModal('modalEditBudget');
+  renderAllViews();
 }
 
 function renderTags() {
@@ -540,6 +616,7 @@ function renderTags() {
   MidoriState.categories.forEach(cat => {
     let spent = 0;
     MidoriState.transactions.forEach(tx => {
+      if (tx.date > MidoriState.virtualDate) return; // Strict time-travel rollback filter!
       if (tx.categoryId === cat.id) {
         const txDate = new Date(tx.date);
         if (txDate.getMonth() === month && txDate.getFullYear() === year) {
@@ -551,7 +628,7 @@ function renderTags() {
     });
 
     const isExpense = cat.type === 'expense';
-    const hasBudget = isExpense && cat.budget > 0;
+    const includedInBudget = cat.includeInBudget;
     const iconSvg = SVG_ICONS[cat.icon] || SVG_ICONS.leaf;
 
     const html = `
@@ -569,7 +646,7 @@ function renderTags() {
           <div class="budget-limits-numbers">
             <div class="budget-spent">${formatCurrency(spent, baseCurrency)}</div>
             <div class="budget-max">
-              ${hasBudget ? `Budget: ${formatCurrency(cat.budget, baseCurrency)}` : (isExpense ? 'No Limit Set' : 'Monthly Income')}
+              ${isExpense ? (includedInBudget ? 'Budget Included: Yes' : 'Budget Included: No') : 'Monthly Income'}
             </div>
           </div>
         </div>
@@ -615,6 +692,7 @@ function renderLedger() {
 
   // Filter
   const filtered = MidoriState.transactions.filter(tx => {
+    if (tx.date > MidoriState.virtualDate) return false; // Strict time-travel rollback filter!
     const matchesSearch = tx.title.toLowerCase().includes(searchVal) || (tx.note && tx.note.toLowerCase().includes(searchVal));
     const matchesWallet = filterWalletId === 'all' || tx.walletId === filterWalletId;
     const matchesTag = filterTagId === 'all' || tx.categoryId === filterTagId;
@@ -908,15 +986,15 @@ function setupFormColorPickers() {
   });
 }
 
-// Hide budget limits if creating an Income Tag
+// Hide budget checkbox container if creating an Income Tag
 function syncCategoryFormBudgetState() {
   const type = document.getElementById('catType').value;
-  const group = document.getElementById('categoryBudgetGroup');
+  const checkboxContainer = document.getElementById('catIncludeInBudget').closest('.input-group');
   if (type === 'income') {
-    group.style.display = 'none';
-    document.getElementById('catBudget').value = '';
+    checkboxContainer.style.display = 'none';
+    document.getElementById('catIncludeInBudget').checked = false;
   } else {
-    group.style.display = 'flex';
+    checkboxContainer.style.display = 'block';
   }
 }
 
@@ -1017,7 +1095,7 @@ function openEditCategoryModal(categoryId) {
   document.getElementById('editCatName').value = cat.name;
   document.getElementById('editCatType').value = cat.type;
   document.getElementById('editCatIcon').value = cat.icon;
-  document.getElementById('editCatBudget').value = cat.budget !== null ? cat.budget : '';
+  document.getElementById('editCatIncludeInBudget').checked = !!cat.includeInBudget;
 
   syncEditCategoryFormBudgetState();
 
@@ -1036,12 +1114,12 @@ function openEditCategoryModal(categoryId) {
 
 function syncEditCategoryFormBudgetState() {
   const type = document.getElementById('editCatType').value;
-  const group = document.getElementById('editCategoryBudgetGroup');
+  const checkboxContainer = document.getElementById('editCatIncludeInBudget').closest('.input-group');
   if (type === 'income') {
-    group.style.display = 'none';
-    document.getElementById('editCatBudget').value = '';
+    checkboxContainer.style.display = 'none';
+    document.getElementById('editCatIncludeInBudget').checked = false;
   } else {
-    group.style.display = 'flex';
+    checkboxContainer.style.display = 'block';
   }
 }
 
@@ -1054,7 +1132,7 @@ function submitEditCategoryForm(e) {
     type: document.getElementById('editCatType').value,
     icon: document.getElementById('editCatIcon').value,
     color: selectedEditCategoryColor,
-    budget: document.getElementById('editCatBudget').value ? Number(document.getElementById('editCatBudget').value) : null
+    includeInBudget: document.getElementById('editCatIncludeInBudget').checked
   };
 
   updateCategory(id, updatedFields);
@@ -1069,7 +1147,6 @@ function openEditTransactionModal(txId) {
   document.getElementById('editTxTitle').value = tx.title;
   document.getElementById('editTxAmount').value = tx.amount;
   document.getElementById('editTxType').value = tx.type;
-  document.getElementById('editTxCurrency').value = tx.currency;
   document.getElementById('editTxDate').value = tx.date;
   document.getElementById('editTxNote').value = tx.note || '';
 
@@ -1085,6 +1162,9 @@ function openEditTransactionModal(txId) {
   syncEditTransactionCategoryOptions();
   document.getElementById('editTxCategory').value = tx.categoryId;
 
+  // Sync transaction currency
+  document.getElementById('editTxCurrency').value = tx.currency || (MidoriState.wallets.find(w => w.id === tx.walletId)?.currency || 'USD');
+
   openModal('modalEditTransaction');
 }
 
@@ -1098,6 +1178,14 @@ function syncEditTransactionCategoryOptions() {
     .forEach(c => {
       select.insertAdjacentHTML('beforeend', `<option value="${c.id}">${c.name}</option>`);
     });
+}
+
+function syncEditTransactionCurrencyDefault() {
+  const walletId = document.getElementById('editTxWallet').value;
+  const wallet = MidoriState.wallets.find(w => w.id === walletId);
+  if (wallet) {
+    document.getElementById('editTxCurrency').value = wallet.currency;
+  }
 }
 
 function submitEditTransactionForm(e) {
@@ -1186,7 +1274,9 @@ function submitCategoryForm(e) {
     type: document.getElementById('catType').value,
     icon: document.getElementById('catIcon').value,
     color: selectedCategoryColor,
-    budget: document.getElementById('catBudget').value ? Number(document.getElementById('catBudget').value) : null
+    includeInBudget: document.getElementById('catIncludeInBudget').checked,
+    budget: null,
+    yearlyBudget: null
   };
 
   addCategory(category);

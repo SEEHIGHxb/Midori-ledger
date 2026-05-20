@@ -70,6 +70,7 @@ function renderTrendChart(colors, baseCurrency) {
 
   // Distribute transactions to corresponding month indices
   MidoriState.transactions.forEach(tx => {
+    if (tx.date > MidoriState.virtualDate) return;
     const txDate = new Date(tx.date);
     const txMonth = txDate.getMonth();
     const txYear = txDate.getFullYear();
@@ -188,6 +189,7 @@ function renderExpenseDonut(colors, baseCurrency) {
   });
 
   MidoriState.transactions.forEach(tx => {
+    if (tx.date > MidoriState.virtualDate) return;
     if (tx.type === 'expense' && categoryTotals[tx.categoryId]) {
       const wallet = MidoriState.wallets.find(w => w.id === tx.walletId);
       const txCurrency = tx.currency || (wallet ? wallet.currency : baseCurrency);
@@ -270,6 +272,7 @@ function renderIncomeDonut(colors, baseCurrency) {
   });
 
   MidoriState.transactions.forEach(tx => {
+    if (tx.date > MidoriState.virtualDate) return;
     if (tx.type === 'income' && categoryTotals[tx.categoryId]) {
       const wallet = MidoriState.wallets.find(w => w.id === tx.walletId);
       const txCurrency = tx.currency || (wallet ? wallet.currency : baseCurrency);

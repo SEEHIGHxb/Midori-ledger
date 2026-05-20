@@ -297,6 +297,12 @@ header {
   font-family: 'Outfit', sans-serif;
   letter-spacing: 0.5px;
   white-space: nowrap;
+  position: relative;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+.date-badge:hover {
+  opacity: 0.85;
 }
 body.light-theme .date-badge {
   color: var(--green-forest);

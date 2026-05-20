@@ -118,9 +118,10 @@
         <div class="header-controls">
           <!-- Time Travel Controller -->
           <div class="time-travel-widget">
-            <span class="date-badge">
+            <span class="date-badge" style="position: relative; overflow: hidden; cursor: pointer;">
               <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2.5" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
               <span id="virtualDateDisplay">20 May 2026</span>
+              <input type="date" id="headerDatePicker" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; border: none; padding: 0;">
             </span>
             <button class="time-travel-btn" id="timeTravelBtnPrevYear" onclick="triggerYearTravel(-1)">-1 Year</button>
             <button class="time-travel-btn" id="timeTravelBtnPrevMonth" onclick="triggerMonthTravel(-1)">-1 Month</button>
@@ -262,8 +263,14 @@
            TAB: BUDGETS
            ========================================================================== -->
       <div id="tab-budgets" class="tab-content">
-        <div class="section-header">
-          <h2>Monthly Budgets</h2>
+        <div class="section-header" style="flex-wrap: wrap; gap: 16px;">
+          <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
+            <h2 style="margin: 0;">Budgets Tracker</h2>
+            <select id="budgetPeriodSelect" class="currency-select" onchange="switchBudgetPeriod(this.value)" style="margin: 0; padding: 6px 12px; height: auto; border: 1px solid var(--border-color); border-radius: 8px; background: var(--glass-bg);">
+              <option value="monthly">Monthly Limit View</option>
+              <option value="yearly">Yearly Limit View</option>
+            </select>
+          </div>
         </div>
         
         <div class="budgets-grid" id="budgetsContainer">
@@ -375,7 +382,45 @@
            TAB: SETTINGS
            ========================================================================== -->
       <div id="tab-settings" class="tab-content">
-        <h2>App Configuration</h2>
+        <h2>App Configuration & Guide</h2>
+        
+        <!-- Zen Quick Visual Guide -->
+        <div class="settings-group" style="border-left: 4px solid var(--green-matcha); background: rgba(77, 156, 78, 0.04); margin-bottom: 24px; padding: 24px;">
+          <h3 style="color: var(--green-sage); margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+            🌿 Quick User Guide
+          </h3>
+          <p style="font-size: 13px; opacity: 0.9; margin-bottom: 16px;">Welcome to Midori Ledger, your minimalist workspace for elegant financial tracking. Learn how to master its leafy accounting features:</p>
+          
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;">
+            <div style="background: var(--bg-card); border: 1px solid var(--border-color); padding: 14px; border-radius: 12px;">
+              <h4 style="font-size: 14px; color: var(--green-mint); margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
+                🕰️ Virtual Time-Travel
+              </h4>
+              <p style="font-size: 12px; line-height: 1.5; opacity: 0.8;">Click the top green calendar badge or use the step buttons to change dates. Future scheduled items generate automatically, and returning to the past will dynamically filter them out.</p>
+            </div>
+            
+            <div style="background: var(--bg-card); border: 1px solid var(--border-color); padding: 14px; border-radius: 12px;">
+              <h4 style="font-size: 14px; color: var(--green-mint); margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
+                💳 Multi-Currency Sync
+              </h4>
+              <p style="font-size: 12px; line-height: 1.5; opacity: 0.8;">Wallet cards show balances converted to the active Base Currency, plus their original local values. Changing the base currency at the header instantly updates all metrics.</p>
+            </div>
+            
+            <div style="background: var(--bg-card); border: 1px solid var(--border-color); padding: 14px; border-radius: 12px;">
+              <h4 style="font-size: 14px; color: var(--green-mint); margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
+                📈 Flexible Budgets
+              </h4>
+              <p style="font-size: 12px; line-height: 1.5; opacity: 0.8;">Taggings can be selected to be included in the Budget Panel via checkboxes. Specific monthly and yearly limit thresholds can be configured directly from the Budgets tab.</p>
+            </div>
+            
+            <div style="background: var(--bg-card); border: 1px solid var(--border-color); padding: 14px; border-radius: 12px;">
+              <h4 style="font-size: 14px; color: var(--green-mint); margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
+                📅 Recurrence Rules
+              </h4>
+              <p style="font-size: 12px; line-height: 1.5; opacity: 0.8;">Setup automated salaries, recurring bills, or subscription deposits under the Schedules tab. You can optionally enforce custom expiration bounds via End Occurrence dates.</p>
+            </div>
+          </div>
+        </div>
         
         <div class="settings-group">
           <h3>High Fidelity Mock Data</h3>
@@ -672,9 +717,11 @@
           <input type="text" id="catName" class="form-control" placeholder="E.g., Ramen Dinners, Subscriptions" required>
         </div>
 
-        <div class="input-group" id="categoryBudgetGroup">
-          <label for="catBudget">Monthly Limit Budget Amount <span style="font-size:10px; font-weight:400; color:var(--text-muted);">(Optional - Set in Base Currency)</span></label>
-          <input type="number" id="catBudget" class="form-control" placeholder="Optional. e.g. 20000" min="0" step="any">
+        <div class="input-group">
+          <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-weight: 500; font-size: 14px; margin-top: 8px; margin-bottom: 8px;">
+            <input type="checkbox" id="catIncludeInBudget" checked style="width:18px; height:18px; accent-color:var(--green-matcha); cursor:pointer;">
+            <span>Include in Budgets Panel</span>
+          </label>
         </div>
 
         <div class="input-group">
@@ -815,9 +862,11 @@
           <input type="text" id="editCatName" class="form-control" placeholder="E.g., Ramen Dinners, Subscriptions" required>
         </div>
 
-        <div class="input-group" id="editCategoryBudgetGroup">
-          <label for="editCatBudget">Monthly Limit Budget Amount <span style="font-size:10px; font-weight:400; color:var(--text-muted);">(Optional - Set in Base Currency)</span></label>
-          <input type="number" id="editCatBudget" class="form-control" placeholder="Optional. e.g. 20000" min="0" step="any">
+        <div class="input-group">
+          <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-weight: 500; font-size: 14px; margin-top: 8px; margin-bottom: 8px;">
+            <input type="checkbox" id="editCatIncludeInBudget" checked style="width:18px; height:18px; accent-color:var(--green-matcha); cursor:pointer;">
+            <span>Include in Budgets Panel</span>
+          </label>
         </div>
 
         <div class="input-group">
@@ -881,7 +930,7 @@
         <div class="form-row">
           <div class="input-group">
             <label for="editTxWallet">Wallet</label>
-            <select id="editTxWallet" class="form-control" required>
+            <select id="editTxWallet" class="form-control" onchange="syncEditTransactionCurrencyDefault()" required>
               <!-- Loaded dynamically -->
             </select>
           </div>
@@ -993,6 +1042,40 @@
         </div>
 
         <button type="submit" class="form-submit-btn">Save Schedule Changes</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       MODAL: EDIT BUDGET LIMITS
+       ========================================================================== -->
+  <div class="modal-overlay" id="modalEditBudget">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h3>Edit Category Budget Limits</h3>
+        <button class="modal-close-btn" onclick="closeModal('modalEditBudget')">
+          <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+      <form class="modal-form" id="editBudgetForm" onsubmit="submitEditBudgetForm(event)">
+        <input type="hidden" id="editBudgetCategoryId">
+        
+        <div class="input-group">
+          <label style="font-weight: 700; font-size: 16px;" id="editBudgetCategoryLabel">Category: Food</label>
+        </div>
+
+        <div class="form-row">
+          <div class="input-group">
+            <label for="editBudgetMonthly">Monthly Budget Limit <span style="font-size:10px; font-weight:400; color:var(--text-muted);">(Base Currency)</span></label>
+            <input type="number" id="editBudgetMonthly" class="form-control" placeholder="Optional. e.g. 50000" min="0" step="any">
+          </div>
+          <div class="input-group">
+            <label for="editBudgetYearly">Yearly Budget Limit <span style="font-size:10px; font-weight:400; color:var(--text-muted);">(Base Currency)</span></label>
+            <input type="number" id="editBudgetYearly" class="form-control" placeholder="Optional. e.g. 600000" min="0" step="any">
+          </div>
+        </div>
+
+        <button type="submit" class="form-submit-btn">Save Budget Limits</button>
       </form>
     </div>
   </div>
