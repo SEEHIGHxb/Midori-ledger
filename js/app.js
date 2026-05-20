@@ -8,6 +8,14 @@ let activeTab = 'dashboard';
 let selectedWalletColor = '#2d5a27';
 let selectedCategoryColor = '#5a7d5b';
 let selectedEditWalletColor = '#2d5a27';
+let selectedEditCategoryColor = '#5a7d5b';
+
+function formatDisplayDate(dateStr) {
+  if (!dateStr) return '';
+  const parts = dateStr.split('-');
+  if (parts.length !== 3) return dateStr;
+  return `${parts[2]}-${parts[1]}-${parts[0]}`; // DD-MM-YYYY
+}
 
 // On page load initialization
 document.addEventListener('DOMContentLoaded', () => {
@@ -55,7 +63,7 @@ function handleStateChange() {
 
 function renderAllViews() {
   // Display virtual date in header
-  document.getElementById('virtualDateDisplay').innerText = MidoriState.virtualDate;
+  document.getElementById('virtualDateDisplay').innerText = formatDisplayDate(MidoriState.virtualDate);
   
   // Re-run aggregate analytics & redraw graphs
   renderDashboardMetrics();
@@ -489,9 +497,14 @@ function renderBudgets() {
         
         <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--border-color); padding-top:10px; font-size:12px;">
           <span style="color:var(--text-muted);">ID: ${cat.id.split('_')[1] || cat.id}</span>
-          <button class="wallet-delete-btn" onclick="triggerCategoryDelete('${cat.id}')" title="Delete Tag" style="color:var(--text-muted);">
-            <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-          </button>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <button class="wallet-edit-btn" onclick="openEditCategoryModal('${cat.id}')" title="Edit Budget" style="color:var(--text-muted); background:none; border:none; cursor:pointer; display:inline-flex; align-items:center; padding:2px;">
+              <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4Z"></path></svg>
+            </button>
+            <button class="wallet-delete-btn" onclick="triggerCategoryDelete('${cat.id}')" title="Delete Tag" style="color:var(--text-muted); background:none; border:none; cursor:pointer; display:inline-flex; align-items:center; padding:2px;">
+              <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+            </button>
+          </div>
         </div>
       </div>
     `;
@@ -558,9 +571,14 @@ function renderTags() {
         
         <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--border-color); padding-top:10px; font-size:12px; margin-top: 10px;">
           <span style="color:var(--text-muted);">ID: ${cat.id.split('_')[1] || cat.id}</span>
-          <button class="wallet-delete-btn" onclick="triggerCategoryDelete('${cat.id}')" title="Delete Tag" style="color:var(--text-muted);">
-            <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-          </button>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <button class="wallet-edit-btn" onclick="openEditCategoryModal('${cat.id}')" title="Edit Tag" style="color:var(--text-muted); background:none; border:none; cursor:pointer; display:inline-flex; align-items:center; padding:2px;">
+              <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4Z"></path></svg>
+            </button>
+            <button class="wallet-delete-btn" onclick="triggerCategoryDelete('${cat.id}')" title="Delete Tag" style="color:var(--text-muted); background:none; border:none; cursor:pointer; display:inline-flex; align-items:center; padding:2px;">
+              <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+            </button>
+          </div>
         </div>
       </div>
     `;
@@ -625,7 +643,7 @@ function renderLedger() {
 
     const rowHTML = `
       <tr>
-        <td style="font-weight:600; font-family:'Outfit'; white-space:nowrap;">${tx.date}</td>
+        <td style="font-weight:600; font-family:'Outfit'; white-space:nowrap;">${formatDisplayDate(tx.date)}</td>
         <td>
           <div class="tx-title-cell">
             <span class="tx-title-main">${tx.title}</span>
@@ -647,9 +665,14 @@ function renderLedger() {
           ${isIncome ? '+' : '-'}${formattedAmount}
         </td>
         <td>
-          <button class="btn-icon-danger" onclick="triggerTransactionDelete('${tx.id}')" title="Delete record">
-            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-          </button>
+          <div style="display:flex; gap:6px; justify-content:center;">
+            <button class="btn-icon-secondary" onclick="openEditTransactionModal('${tx.id}')" title="Edit record" style="background:none; border:none; color:var(--text-muted); cursor:pointer; display:inline-flex; align-items:center; padding:4px;">
+              <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4Z"></path></svg>
+            </button>
+            <button class="btn-icon-danger" onclick="triggerTransactionDelete('${tx.id}')" title="Delete record" style="background:none; border:none; color:var(--autumn-terracotta); cursor:pointer; display:inline-flex; align-items:center; padding:4px;">
+              <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+            </button>
+          </div>
         </td>
       </tr>
     `;
@@ -702,7 +725,7 @@ function renderSchedules() {
               Pay Wallet: <b>${walletName}</b> • Tag: <b>${catName}</b>
             </span>
             <span class="sched-sub" style="font-size:10px; margin-top:2px;">
-              Started: ${sched.startDate} • <b>Next Auto-Occurrence: ${sched.nextDueDate}</b>
+              Started: ${formatDisplayDate(sched.startDate)} • <b>Next Auto-Occurrence: ${formatDisplayDate(sched.nextDueDate)}</b>
             </span>
           </div>
         </div>
@@ -713,6 +736,9 @@ function renderSchedules() {
           <div style="display:flex; align-items:center; gap:8px;">
             <button class="btn-secondary" onclick="toggleScheduleActive('${sched.id}')" style="padding:6px 12px; font-size:12px;">
               ${sched.active ? 'Pause' : 'Resume'}
+            </button>
+            <button class="btn-secondary" onclick="openEditScheduleModal('${sched.id}')" title="Edit Schedule" style="padding:6px; display:inline-flex; align-items:center; justify-content:center;">
+              <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4Z"></path></svg>
             </button>
             <button class="btn-icon-danger" onclick="triggerScheduleDelete('${sched.id}')">
               <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
@@ -861,6 +887,16 @@ function setupFormColorPickers() {
       selectedCategoryColor = chip.getAttribute('data-color');
     });
   });
+
+  // Edit Category Color Picker setup
+  const editCatColorChips = document.querySelectorAll('#editCatColorPicker .color-option');
+  editCatColorChips.forEach(chip => {
+    chip.addEventListener('click', () => {
+      editCatColorChips.forEach(c => c.classList.remove('selected'));
+      chip.classList.add('selected');
+      selectedEditCategoryColor = chip.getAttribute('data-color');
+    });
+  });
 }
 
 // Hide budget limits if creating an Income Tag
@@ -964,6 +1000,173 @@ function submitEditWalletForm(e) {
   closeModal('modalEditWallet');
 }
 
+function openEditCategoryModal(categoryId) {
+  const cat = MidoriState.categories.find(c => c.id === categoryId);
+  if (!cat) return;
+
+  document.getElementById('editCategoryId').value = cat.id;
+  document.getElementById('editCatName').value = cat.name;
+  document.getElementById('editCatType').value = cat.type;
+  document.getElementById('editCatIcon').value = cat.icon;
+  document.getElementById('editCatBudget').value = cat.budget !== null ? cat.budget : '';
+
+  syncEditCategoryFormBudgetState();
+
+  selectedEditCategoryColor = cat.color || '#5a7d5b';
+  const chips = document.querySelectorAll('#editCatColorPicker .color-option');
+  chips.forEach(chip => {
+    if (chip.getAttribute('data-color') === selectedEditCategoryColor) {
+      chip.classList.add('selected');
+    } else {
+      chip.classList.remove('selected');
+    }
+  });
+
+  openModal('modalEditCategory');
+}
+
+function syncEditCategoryFormBudgetState() {
+  const type = document.getElementById('editCatType').value;
+  const group = document.getElementById('editCategoryBudgetGroup');
+  if (type === 'income') {
+    group.style.display = 'none';
+    document.getElementById('editCatBudget').value = '';
+  } else {
+    group.style.display = 'flex';
+  }
+}
+
+function submitEditCategoryForm(e) {
+  e.preventDefault();
+
+  const id = document.getElementById('editCategoryId').value;
+  const updatedFields = {
+    name: document.getElementById('editCatName').value,
+    type: document.getElementById('editCatType').value,
+    icon: document.getElementById('editCatIcon').value,
+    color: selectedEditCategoryColor,
+    budget: document.getElementById('editCatBudget').value ? Number(document.getElementById('editCatBudget').value) : null
+  };
+
+  updateCategory(id, updatedFields);
+  closeModal('modalEditCategory');
+}
+
+function openEditTransactionModal(txId) {
+  const tx = MidoriState.transactions.find(t => t.id === txId);
+  if (!tx) return;
+
+  document.getElementById('editTxId').value = tx.id;
+  document.getElementById('editTxTitle').value = tx.title;
+  document.getElementById('editTxAmount').value = tx.amount;
+  document.getElementById('editTxType').value = tx.type;
+  document.getElementById('editTxCurrency').value = tx.currency;
+  document.getElementById('editTxDate').value = tx.date;
+  document.getElementById('editTxNote').value = tx.note || '';
+
+  // Populate wallets dropdown inside the edit modal
+  const editTxWallet = document.getElementById('editTxWallet');
+  editTxWallet.innerHTML = '';
+  MidoriState.wallets.forEach(w => {
+    editTxWallet.insertAdjacentHTML('beforeend', `<option value="${w.id}">${w.name} (${w.currency})</option>`);
+  });
+  editTxWallet.value = tx.walletId;
+
+  // Populate category tags dropdown based on transaction type
+  syncEditTransactionCategoryOptions();
+  document.getElementById('editTxCategory').value = tx.categoryId;
+
+  openModal('modalEditTransaction');
+}
+
+function syncEditTransactionCategoryOptions() {
+  const type = document.getElementById('editTxType').value;
+  const select = document.getElementById('editTxCategory');
+  select.innerHTML = '';
+
+  MidoriState.categories
+    .filter(c => c.type === type)
+    .forEach(c => {
+      select.insertAdjacentHTML('beforeend', `<option value="${c.id}">${c.name}</option>`);
+    });
+}
+
+function submitEditTransactionForm(e) {
+  e.preventDefault();
+
+  const id = document.getElementById('editTxId').value;
+  const updatedFields = {
+    title: document.getElementById('editTxTitle').value,
+    amount: Number(document.getElementById('editTxAmount').value),
+    type: document.getElementById('editTxType').value,
+    walletId: document.getElementById('editTxWallet').value,
+    categoryId: document.getElementById('editTxCategory').value,
+    currency: document.getElementById('editTxCurrency').value,
+    date: document.getElementById('editTxDate').value,
+    note: document.getElementById('editTxNote').value
+  };
+
+  updateTransaction(id, updatedFields);
+  closeModal('modalEditTransaction');
+}
+
+function openEditScheduleModal(schedId) {
+  const sched = MidoriState.schedules.find(s => s.id === schedId);
+  if (!sched) return;
+
+  document.getElementById('editSchedId').value = sched.id;
+  document.getElementById('editSchedTitle').value = sched.title;
+  document.getElementById('editSchedAmount').value = sched.amount;
+  document.getElementById('editSchedType').value = sched.type;
+  document.getElementById('editSchedFrequency').value = sched.frequency;
+  document.getElementById('editSchedStartDate').value = sched.startDate;
+
+  // Populate wallets dropdown
+  const editSchedWallet = document.getElementById('editSchedWallet');
+  editSchedWallet.innerHTML = '';
+  MidoriState.wallets.forEach(w => {
+    editSchedWallet.insertAdjacentHTML('beforeend', `<option value="${w.id}">${w.name} (${w.currency})</option>`);
+  });
+  editSchedWallet.value = sched.walletId;
+
+  // Populate category tags
+  syncEditScheduleCategoryOptions();
+  document.getElementById('editSchedCategory').value = sched.categoryId;
+
+  openModal('modalEditSchedule');
+}
+
+function syncEditScheduleCategoryOptions() {
+  const type = document.getElementById('editSchedType').value;
+  const select = document.getElementById('editSchedCategory');
+  select.innerHTML = '';
+
+  MidoriState.categories
+    .filter(c => c.type === type)
+    .forEach(c => {
+      select.insertAdjacentHTML('beforeend', `<option value="${c.id}">${c.name}</option>`);
+    });
+}
+
+function submitEditScheduleForm(e) {
+  e.preventDefault();
+
+  const id = document.getElementById('editSchedId').value;
+  const updatedFields = {
+    title: document.getElementById('editSchedTitle').value,
+    amount: Number(document.getElementById('editSchedAmount').value),
+    type: document.getElementById('editSchedType').value,
+    walletId: document.getElementById('editSchedWallet').value,
+    categoryId: document.getElementById('editSchedCategory').value,
+    frequency: document.getElementById('editSchedFrequency').value,
+    startDate: document.getElementById('editSchedStartDate').value,
+    nextDueDate: document.getElementById('editSchedStartDate').value
+  };
+
+  updateSchedule(id, updatedFields);
+  closeModal('modalEditSchedule');
+}
+
 function submitCategoryForm(e) {
   e.preventDefault();
   
@@ -1009,6 +1212,31 @@ function submitScheduleForm(e) {
  */
 function triggerTimeTravel(days) {
   fastForwardDate(days); // calling scheduler method
+}
+
+function triggerMonthTravel(months) {
+  const current = new Date(MidoriState.virtualDate);
+  current.setMonth(current.getMonth() + months);
+  const newDateStr = current.toISOString().split('T')[0];
+  MidoriState.virtualDate = newDateStr;
+  saveState();
+  processSchedules(newDateStr);
+}
+
+function triggerYearTravel(years) {
+  const current = new Date(MidoriState.virtualDate);
+  current.setFullYear(current.getFullYear() + years);
+  const newDateStr = current.toISOString().split('T')[0];
+  MidoriState.virtualDate = newDateStr;
+  saveState();
+  processSchedules(newDateStr);
+}
+
+function resetToCurrentDate() {
+  const baseDateStr = '2026-05-20';
+  MidoriState.virtualDate = baseDateStr;
+  saveState();
+  processSchedules(baseDateStr);
 }
 
 function changeBaseCurrency(newCurr) {

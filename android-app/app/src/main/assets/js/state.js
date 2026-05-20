@@ -527,6 +527,17 @@ function deleteTransaction(txId) {
   }
 }
 
+function updateTransaction(txId, updatedFields) {
+  const index = MidoriState.transactions.findIndex(t => t.id === txId);
+  if (index !== -1) {
+    if (updatedFields.amount !== undefined) {
+      updatedFields.amount = Number(updatedFields.amount);
+    }
+    MidoriState.transactions[index] = { ...MidoriState.transactions[index], ...updatedFields };
+    recalculateWalletBalances();
+  }
+}
+
 // Schedules
 function addSchedule(schedule) {
   schedule.id = generateUUID();
