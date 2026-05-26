@@ -1642,3 +1642,102 @@ function scanQRCodeFrame() {
   }
   qrScanRequestFrame = requestAnimationFrame(scanQRCodeFrame);
 }
+
+// Render ZenSync configuration UI and QR pairing canvas dynamically
+window.updateSyncUI = function(status) {
+  const syncEnabled = MidoriState.preferences.syncEnabled;
+  const syncId = MidoriState.preferences.syncId;
+  const syncKey = MidoriState.preferences.syncKey;
+  const lastSynced = MidoriState.preferences.lastSyncedAt;
+  
+  const disabledView = document.getElementById('zensync-disabled-view');
+  const enabledView = document.getElementById('zensync-enabled-view');
+  const headerStatus = document.getElementById('zensync-header-status');
+  
+  if (!disabledView || !enabledView) return;
+  
+  if (syncEnabled && syncId && syncKey) {
+    disabledView.style.display = 'none';
+    enabledView.style.display = 'block';
+    if (headerStatus) headerStatus.style.display = 'flex';
+    
+    // Populate form fields
+    const idInput = document.getElementById('sync-id-display');
+    const keyInput = document.getElementById('sync-key-display');
+    if (idInput) idInput.value = syncId;
+    if (keyInput) keyInput.value = syncKey;
+    
+    // Update last sync time display
+    const lastSyncedText = document.getElementById('sync-last-time');
+    if (lastSyncedText) {
+      if (lastSynced > 0) {
+        const date = new Date(lastSynced);
+        lastSyncedText.innerText = `Synced at: ${date.toLocaleTimeString()}`;
+      } else {
+        lastSyncedText.innerText = 'Never synced';
+      }
+    }
+    
+    // Set dynamic sync status state
+    let currentStatus = status;
+    if (!currentStatus) {
+      currentStatus = 'synced'; // default active state
+    }
+    
+    const statusLabel = document.getElementById('sync-status-label');
+    const headerDot = document.getElementById('zensync-header-dot');
+    const headerText = document.getElementById('zensync-header-text');
+    
+    if (currentStatus === 'syncing') {
+      if (statusLabel) {
+        statusLabel.innerText = 'Syncing...';
+        statusLabel.style.color = 'var(--autumn-terracotta)';
+      }
+      if (headerDot) {
+        headerDot.style.background = '#e69c24'; // Warm gold
+        headerDot.style.animation = 'pulse 0.8s infinite';
+      }
+      if (headerText) headerText.innerText = 'Syncing...';
+    } else if (currentStatus === 'error') {
+      if (statusLabel) {
+        statusLabel.innerText = 'Sync Error';
+        statusLabel.style.color = '#bf4343'; // Error red
+      }
+      if (headerDot) {
+        headerDot.style.background = '#bf4343'; // Error red
+        headerDot.style.animation = 'none';
+      }
+      if (headerText) headerText.innerText = 'Sync Error';
+    } else { // synced
+      if (statusLabel) {
+        statusLabel.innerText = 'Active';
+        statusLabel.style.color = 'var(--green-mint)';
+      }
+      if (headerDot) {
+        headerDot.style.background = 'var(--green-mint)';
+        headerDot.style.animation = 'sync-pulse 2s infinite ease-in-out';
+      }
+      if (headerText) headerText.innerText = 'Synced';
+    }
+    
+    // Draw beautiful pairing QR Code canvas
+    const canvas = document.getElementById('sync-qrcode-canvas');
+    if (canvas && typeof QRCode !== 'undefined') {
+      const pairingText = `${syncId}|${syncKey}`;
+      QRCode.toCanvas(canvas, pairingText, {
+        width: 160,
+        margin: 1,
+        color: {
+          dark: '#1e381b',  // Matcha forest green theme
+          light: '#ffffff' // Crisp white background
+        }
+      }, function (error) {
+        if (error) console.error('Failed to render pairing QR Code:', error);
+      });
+    }
+  } else {
+    disabledView.style.display = 'block';
+    enabledView.style.display = 'none';
+    if (headerStatus) headerStatus.style.display = 'none';
+  }
+};

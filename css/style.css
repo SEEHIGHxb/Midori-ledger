@@ -1352,3 +1352,7 @@ body.light-theme .date-badge {
   }
 }
 
+.sync-icon-pulse {
+  animation: sync-pulse 2s infinite ease-in-out;
+}
+
