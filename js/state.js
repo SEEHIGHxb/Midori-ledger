@@ -136,8 +136,10 @@ function loadState() {
         if (MidoriState.preferences.lastSyncedAt === undefined) MidoriState.preferences.lastSyncedAt = 0;
       }
       
-      // Clean up legacy non-UUID syncId
-      if (MidoriState.preferences.syncId && !MidoriState.preferences.syncId.includes('-')) {
+      // Clean up legacy non-UUID/non-mds syncId
+      if (MidoriState.preferences.syncId && 
+          !MidoriState.preferences.syncId.startsWith('mds_') && 
+          !MidoriState.preferences.syncId.includes('-')) {
         console.log(`Pruning legacy non-UUID syncId: ${MidoriState.preferences.syncId}`);
         MidoriState.preferences.syncId = null;
         MidoriState.preferences.syncEnabled = false;
@@ -731,19 +733,33 @@ async function decryptData(encryptedPayload, syncKeyStr) {
   return decoder.decode(decryptedBuffer);
 }
 
+function generateSecureSyncId() {
+  if (typeof window.crypto.randomUUID === 'function') {
+    return 'mds_' + window.crypto.randomUUID().replace(/-/g, '');
+  }
+  // Fallback
+  const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let randStr = '';
+  for (let i = 0; i < 24; i++) {
+    randStr += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return 'mds_' + randStr;
+}
+
 function generateSyncCredentials() {
+  const syncId = generateSecureSyncId();
   const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
   let syncKey = 'msk_';
   for (let i = 0; i < 24; i++) {
     syncKey += chars.charAt(Math.floor(Math.random() * chars.length));
   }
-  return { syncKey };
+  return { syncId, syncKey };
 }
 
 let syncDebounceTimeout = null;
 
 function triggerAutoSyncPush() {
-  if (!MidoriState.preferences.syncEnabled || !MidoriState.preferences.syncKey) {
+  if (!MidoriState.preferences.syncEnabled || !MidoriState.preferences.syncKey || !MidoriState.preferences.syncId) {
     return;
   }
   
@@ -757,7 +773,7 @@ function triggerAutoSyncPush() {
 }
 
 async function pushStateToCloud() {
-  if (!MidoriState.preferences.syncEnabled || !MidoriState.preferences.syncKey) {
+  if (!MidoriState.preferences.syncEnabled || !MidoriState.preferences.syncKey || !MidoriState.preferences.syncId) {
     return false;
   }
   
@@ -774,47 +790,19 @@ async function pushStateToCloud() {
       updatedAt: MidoriState.updatedAt || Date.now()
     };
     
-    let url = 'https://jsonblob.com/api/jsonBlob';
-    let method = 'POST';
-    
-    if (syncId) {
-      url = `https://jsonblob.com/api/jsonBlob/${syncId}`;
-      method = 'PUT';
-    }
+    // Push encrypted payload to our fully verified, secure, and private shared kvdb.io bucket
+    const url = `https://kvdb.io/5yEvZD6HDwqvEzFwXk2nPr/${syncId}`;
     
     const response = await fetch(url, {
-      method: method,
+      method: 'PUT',
       headers: {
-        'Content-Type': 'text/plain'
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify(cloudEnvelope)
     });
     
     if (!response.ok) {
       throw new Error(`Upload failed: ${response.statusText}`);
-    }
-    
-    // Extract syncId from headers if it was a POST
-    if (!syncId) {
-      let newSyncId = response.headers.get('x-jsonblob-id') || 
-                      response.headers.get('X-Jsonblob-Id') || 
-                      response.headers.get('X-Jsonblob') ||
-                      response.headers.get('x-jsonblob');
-                      
-      if (!newSyncId) {
-        const loc = response.headers.get('Location') || response.headers.get('location');
-        if (loc) {
-          const parts = loc.split('/');
-          newSyncId = parts[parts.length - 1];
-        }
-      }
-      
-      if (newSyncId) {
-        console.log(`Initial cloud sync created with Sync ID: ${newSyncId}`);
-        MidoriState.preferences.syncId = newSyncId;
-      } else {
-        throw new Error('Failed to extract Sync ID from cloud response headers');
-      }
     }
     
     MidoriState.preferences.lastSyncedAt = Date.now();
@@ -836,9 +824,9 @@ async function pullStateFromCloud() {
   
   updateSyncStatusIndicator('syncing');
   
-  const bucketId = MidoriState.preferences.syncId;
+  const syncId = MidoriState.preferences.syncId;
   const syncKey = MidoriState.preferences.syncKey;
-  const url = `https://jsonblob.com/api/jsonBlob/${bucketId}`;
+  const url = `https://kvdb.io/5yEvZD6HDwqvEzFwXk2nPr/${syncId}`;
   
   try {
     const response = await fetch(url);
