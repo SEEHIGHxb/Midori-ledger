@@ -136,6 +136,15 @@ function loadState() {
         if (MidoriState.preferences.lastSyncedAt === undefined) MidoriState.preferences.lastSyncedAt = 0;
       }
       
+      // Clean up legacy non-UUID syncId
+      if (MidoriState.preferences.syncId && !MidoriState.preferences.syncId.includes('-')) {
+        console.log(`Pruning legacy non-UUID syncId: ${MidoriState.preferences.syncId}`);
+        MidoriState.preferences.syncId = null;
+        MidoriState.preferences.syncEnabled = false;
+        MidoriState.preferences.syncKey = null;
+        MidoriState.preferences.lastSyncedAt = 0;
+      }
+      
       if (!MidoriState.virtualDate) {
         MidoriState.virtualDate = MidoriState.preferences.autoSyncDeviceDate ? getDeviceTodayDateStr() : '2026-05-20';
       }
@@ -776,8 +785,7 @@ async function pushStateToCloud() {
     const response = await fetch(url, {
       method: method,
       headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
+        'Content-Type': 'text/plain'
       },
       body: JSON.stringify(cloudEnvelope)
     });
@@ -788,9 +796,13 @@ async function pushStateToCloud() {
     
     // Extract syncId from headers if it was a POST
     if (!syncId) {
-      let newSyncId = response.headers.get('X-Jsonblob');
+      let newSyncId = response.headers.get('x-jsonblob-id') || 
+                      response.headers.get('X-Jsonblob-Id') || 
+                      response.headers.get('X-Jsonblob') ||
+                      response.headers.get('x-jsonblob');
+                      
       if (!newSyncId) {
-        const loc = response.headers.get('Location');
+        const loc = response.headers.get('Location') || response.headers.get('location');
         if (loc) {
           const parts = loc.split('/');
           newSyncId = parts[parts.length - 1];
