@@ -1,251 +1,96 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="100%" height="100%">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 300" width="100%" height="100%">
   <defs>
-    <!-- Background Ghibli Forest Gradient -->
-    <linearGradient id="bgForest" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#021411" />   <!-- Deep Night-Canopy Green -->
-      <stop offset="50%" stop-color="#04382f" />  <!-- Misty Emerald shadow -->
-      <stop offset="100%" stop-color="#14b8a6" /> <!-- Glowing Turquoise Horizon -->
+    <!-- Premium Emerald-to-Mint Gradient for MIDORI -->
+    <linearGradient id="midoriGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#047857" />  <!-- Deep Emerald -->
+      <stop offset="100%" stop-color="#34D399" /> <!-- Mint -->
     </linearGradient>
 
-    <!-- Warm Golden Bark Highlight (Light-catching side) -->
-    <linearGradient id="barkHighlight" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#b45309" />   <!-- Rich Ochre -->
-      <stop offset="70%" stop-color="#d97706" />  <!-- Warm Golden Amber -->
-      <stop offset="100%" stop-color="#fcd34d" /> <!-- Sun Highlight -->
+    <!-- Premium Turquoise-to-Mint Gradient for Leafy Ledger -->
+    <linearGradient id="leafyGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0D9488" />  <!-- Teal/Turquoise -->
+      <stop offset="100%" stop-color="#2DD4BF" /> <!-- Light Turquoise -->
     </linearGradient>
 
-    <!-- Mossy Tree Bark (Shadow side) -->
-    <linearGradient id="barkShadow" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#022c22" />   <!-- Deepest Green-Black -->
-      <stop offset="50%" stop-color="#047857" />  <!-- Mossy Forest Green -->
-      <stop offset="100%" stop-color="#065f46" /> <!-- Medium Emerald -->
-    </linearGradient>
-
-    <!-- Moss & Vine Gradient -->
-    <linearGradient id="mossGrad" x1="0%" y1="100%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#064e3b" />
-      <stop offset="50%" stop-color="#10b981" />
-      <stop offset="100%" stop-color="#34d399" />
-    </linearGradient>
-
-    <!-- Canopy Leaf Gradient -->
+    <!-- Natural Soft Leaf Gradient -->
     <linearGradient id="leafGrad" x1="0%" y1="100%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#022c22" />
-      <stop offset="50%" stop-color="#059669" />
-      <stop offset="100%" stop-color="#6ee7b7" />
+      <stop offset="0%" stop-color="#059669" />   <!-- Medium Green -->
+      <stop offset="100%" stop-color="#34D399" />  <!-- Mint Leaf -->
     </linearGradient>
 
-    <!-- Komorebi Golden Light Beam Gradient -->
-    <linearGradient id="rayGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#fef08a" stop-opacity="0.25" />
-      <stop offset="40%" stop-color="#34d399" stop-opacity="0.12" />
-      <stop offset="100%" stop-color="#14b8a6" stop-opacity="0" />
-    </linearGradient>
-
-    <!-- Glowing filters -->
-    <filter id="softGlow" x="-20%" y="-20%" width="140%" height="140%">
-      <feGaussianBlur stdDeviation="6" result="blur" />
-      <feComposite in="SourceGraphic" in2="blur" operator="over" />
-    </filter>
-    <filter id="mistGlow" x="-30%" y="-30%" width="160%" height="160%">
-      <feGaussianBlur stdDeviation="15" result="blur" />
-      <feComposite in="SourceGraphic" in2="blur" operator="over" />
-    </filter>
-    <filter id="sporeGlow" x="-50%" y="-50%" width="200%" height="200%">
-      <feGaussianBlur stdDeviation="3" result="blur" />
-      <feMerge>
-        <feMergeNode in="blur" />
-        <feMergeNode in="SourceGraphic" />
-      </feMerge>
+    <!-- Drop Shadow Filter for perfect light/dark contrast -->
+    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="2" dy="5" stdDeviation="6" flood-color="#000000" flood-opacity="0.22" />
     </filter>
   </defs>
 
-  <!-- Deep Ghibli-Forest Backdrop Canvas -->
-  <rect width="100%" height="100%" fill="url(#bgForest)" />
-
-  <!-- Soft Horizon Mist (Volumetric Backdrop Glow) -->
-  <circle cx="200" cy="500" r="250" fill="#14b8a6" opacity="0.35" filter="url(#mistGlow)" />
-  <circle cx="500" cy="480" r="200" fill="#6ee7b7" opacity="0.25" filter="url(#mistGlow)" />
-
-
-  <!-- ==================== LAYER 1: SILHOUETTE BACKGROUND FOREST ==================== -->
-  <!-- Distant, thin vertical tree trunks fading into background mist -->
-  <g opacity="0.22" fill="#042e26">
-    <rect x="80" y="80" width="8" height="520" />
-    <rect x="180" y="60" width="12" height="540" />
-    <rect x="290" y="100" width="10" height="500" />
-    <rect x="520" y="120" width="14" height="480" />
-    <rect x="610" y="70" width="9" height="530" />
-  </g>
-
-  <!-- Distant soft foliage clouds behind background trees -->
-  <g opacity="0.18" filter="url(#softGlow)" fill="#064e3b">
-    <circle cx="90" cy="180" r="70" />
-    <circle cx="190" cy="140" r="90" />
-    <circle cx="310" cy="190" r="80" />
-    <circle cx="540" cy="220" r="100" />
-    <circle cx="630" cy="160" r="70" />
-  </g>
-
-
-  <!-- ==================== LAYER 2: ELEGANT SLENDER TREES (LEFT SIDE) ==================== -->
-  <g filter="url(#softGlow)">
-    <!-- Slender Tree 1 (Left) -->
-    <path d="M 95 600 C 90 400, 110 200, 105 0 L 115 0 C 120 200, 100 400, 107 600 Z" fill="url(#barkShadow)" />
-    <!-- Slender Tree 2 (Left-Center) -->
-    <path d="M 195 600 C 190 450, 205 300, 190 0 L 200 0 C 215 300, 200 450, 205 600 Z" fill="url(#barkHighlight)" opacity="0.85" />
+  <!-- Group with Soft Shadow Filter applied to everything for premium contrast -->
+  <g filter="url(#softShadow)">
     
-    <!-- Slender branches branching out -->
-    <path d="M 107 350 Q 80 280, 50 250" stroke="#022c22" stroke-width="3" stroke-linecap="round" fill="none" />
-    <path d="M 200 280 Q 230 200, 260 160" stroke="#78350f" stroke-width="2.5" stroke-linecap="round" fill="none" />
-  </g>
-
-
-  <!-- ==================== LAYER 3: MAJESTIC ANCIENT GIANTS (RIGHT SIDE) ==================== -->
-  <g filter="url(#softGlow)">
-    <!-- Giant Ancient Tree 1 (Center-Right) -->
-    <!-- Beautiful, massive curved trunk branching at the top -->
-    <g>
-      <!-- Base Shadow Trunk -->
-      <path d="M 370 600 C 430 450, 440 250, 410 0 L 485 0 C 480 250, 490 450, 540 600 Z" fill="url(#barkShadow)" />
-      <!-- Warm Golden Light Highlight (Left Side catching background komorebi) -->
-      <path d="M 370 600 C 430 450, 440 250, 410 0 L 440 0 C 455 250, 445 450, 420 600 Z" fill="url(#barkHighlight)" opacity="0.9" />
-      
-      <!-- Mossy base texture mapping -->
-      <path d="M 370 600 C 400 550, 440 520, 460 600 Z" fill="url(#mossGrad)" opacity="0.8" />
-      <path d="M 470 600 C 485 540, 510 560, 540 600 Z" fill="url(#mossGrad)" opacity="0.75" />
-      
-      <!-- Climbing Vines wrapping around trunk -->
-      <path d="M 405 450 Q 425 420, 450 440 M 430 350 Q 450 320, 470 330 M 420 220 Q 435 200, 450 215" stroke="url(#mossGrad)" stroke-width="4.5" stroke-linecap="round" fill="none" opacity="0.9" />
-    </g>
-
-    <!-- Giant Ancient Tree 2 (Far Right Edge) -->
-    <g>
-      <path d="M 680 600 C 670 400, 690 200, 670 0 L 800 0 L 800 600 Z" fill="url(#barkShadow)" />
-      <!-- Golden Highlight edge -->
-      <path d="M 680 600 C 670 400, 690 200, 670 0 L 690 0 C 710 200, 690 400, 715 600 Z" fill="url(#barkHighlight)" opacity="0.85" />
-      
-      <!-- Mossy base block -->
-      <path d="M 680 600 C 700 510, 760 530, 800 580 L 800 600 Z" fill="url(#mossGrad)" opacity="0.8" />
-    </g>
-  </g>
-
-
-  <!-- ==================== LAYER 4: MOSSY GRASSY FOREST FLOOR ==================== -->
-  <!-- Rolling grass mounds sloping up to the right where the giants sit -->
-  <g filter="url(#softGlow)">
-    <!-- Base deep grass layer -->
-    <path d="M 0 540 C 150 520, 300 500, 450 490 C 600 480, 700 470, 800 460 L 800 600 L 0 600 Z" fill="#011f18" />
-    <!-- Highlight mossy grass layer -->
-    <path d="M 0 550 C 180 535, 320 505, 480 495 C 620 485, 720 475, 800 470 L 800 600 L 0 600 Z" fill="url(#mossGrad)" opacity="0.9" />
-    <!-- Bright forest moss floor highlight -->
-    <path d="M 120 555 C 240 540, 380 515, 520 505 C 640 495, 730 485, 800 480 L 800 600 L 120 600 Z" fill="#34d399" opacity="0.3" />
-  </g>
-
-
-  <!-- ==================== LAYER 5: SWAYING CANOPY & HANGING LEAVES ==================== -->
-  <!-- Staggered hanging branches at the top of the screen swaying in the wind -->
-  <g>
-    <!-- Left Top Hanging Branch Group -->
-    <g transform="translate(150, -20)">
-      <!-- Slow wind sway animation -->
-      <animateTransform attributeName="transform" type="rotate"
-        values="-2 0 0; 3 0 0; -2 0 0"
-        dur="10s" repeatCount="indefinite"
-        calcMode="spline" keyTimes="0; 0.5; 1"
-        keySplines="0.44, 0.05, 0.55, 0.95; 0.44, 0.05, 0.55, 0.95" additive="sum" />
-      
-      <!-- Foliage Paths -->
-      <path d="M -180 0 C -120 50, -60 70, 0 40 C 60 70, 120 50, 180 0 Z" fill="url(#leafGrad)" opacity="0.9" filter="url(#softGlow)" />
-      <path d="M -140 -10 C -90 30, -30 50, 20 20 C 70 50, 110 30, 150 -10 Z" fill="#34d399" opacity="0.35" filter="url(#softGlow)" />
-    </g>
-
-    <!-- Right Top Hanging Branch Group (Staggered sway tempo) -->
-    <g transform="translate(600, -30)">
-      <animateTransform attributeName="transform" type="rotate"
-        values="2 0 0; -3 0 0; 2 0 0"
-        dur="12s" repeatCount="indefinite"
-        calcMode="spline" keyTimes="0; 0.5; 1"
-        keySplines="0.44, 0.05, 0.55, 0.95; 0.44, 0.05, 0.55, 0.95" additive="sum" />
-      
-      <!-- Foliage Paths -->
-      <path d="M -220 0 C -150 60, -80 80, 0 50 C 80 80, 150 60, 220 0 Z" fill="url(#leafGrad)" opacity="0.85" filter="url(#softGlow)" />
-      <path d="M -180 -10 C -120 40, -50 60, 10 30 C 60 60, 110 40, 170 -10 Z" fill="#6ee7b7" opacity="0.25" filter="url(#softGlow)" />
-    </g>
-  </g>
-
-
-  <!-- ==================== LAYER 6: SHIMMERING KOMOREBI (SUNBEAMS) ==================== -->
-  <!-- Diagonal shafts of glowing light filtering down from top-left -->
-  <g filter="url(#softGlow)">
-    <!-- Light Beam 1 -->
-    <path d="M 50 -100 L 450 700 L 300 700 L -100 -100 Z" fill="url(#rayGrad)">
-      <animate attributeName="opacity" values="0.05; 0.22; 0.05" dur="7s" repeatCount="indefinite" calcMode="spline" keyTimes="0; 0.5; 1" keySplines="0.42, 0, 0.58, 1; 0.42, 0, 0.58, 1" />
-    </path>
-    
-    <!-- Light Beam 2 (Centered, offset phase) -->
-    <path d="M 220 -100 L 620 700 L 480 700 L 80 -100 Z" fill="url(#rayGrad)">
-      <animate attributeName="opacity" values="0.20; 0.08; 0.20" dur="9s" repeatCount="indefinite" calcMode="spline" keyTimes="0; 0.5; 1" keySplines="0.42, 0, 0.58, 1; 0.42, 0, 0.58, 1" />
-    </path>
-    
-    <!-- Light Beam 3 (Thinner, far left) -->
-    <path d="M -80 -100 L 220 700 L 140 700 L -160 -100 Z" fill="url(#rayGrad)">
-      <animate attributeName="opacity" values="0.03; 0.15; 0.03" dur="6s" repeatCount="indefinite" calcMode="spline" keyTimes="0; 0.5; 1" keySplines="0.42, 0, 0.58, 1; 0.42, 0, 0.58, 1" />
-    </path>
-  </g>
-
-
-  <!-- ==================== LAYER 7: DRIFTING BACKGROUND LEAVES ==================== -->
-  <!-- Fluttering Leaf 1 (Left - With curved petiole stem) -->
-  <g>
-    <animateMotion path="M 120 -50 C 90 100, 220 220, 100 350 S 200 480, 80 650" dur="14s" repeatCount="indefinite" rotate="auto" />
-    <g>
-      <animateTransform attributeName="transform" type="rotate" values="0; 360" dur="7s" repeatCount="indefinite" />
-      <g transform="scale(1.2)">
-        <path d="M 0 0 C -8 -10 -15 -5 -10 5 C -5 12 5 10 0 0 Z" fill="url(#leafGrad)" opacity="0.4" />
-        <path d="M 0 0 C 1 4 3 8 6 10" stroke="url(#mossGrad)" stroke-width="1.2" stroke-linecap="round" fill="none" opacity="0.4" />
+    <!-- ==================== LEFT BRAND MARK: SWAYING LEAF ==================== -->
+    <g transform="translate(200, 150)">
+      <!-- Standardized Wind Sway Cycle -->
+      <g>
+        <animateTransform attributeName="transform" type="rotate"
+          values="-8 0 0; 8 0 0; -8 0 0"
+          dur="4s" repeatCount="indefinite"
+          calcMode="spline" keyTimes="0; 0.5; 1"
+          keySplines="0.4, 0, 0.2, 1; 0.4, 0, 0.2, 1" />
+        
+        <!-- Minimalist Emerald Leaf Geometry -->
+        <path d="M 0 45 C -45 25 -65 -20 -45 -65 C -25 -110 0 -130 0 -130 C 0 -130 25 -110 45 -65 C 65 -20 45 25 0 45 Z" fill="url(#leafGrad)" />
+        
+        <!-- Elegant Light Vein Detail -->
+        <path d="M 0 45 C 0 15 0 -20 0 -115" stroke="#FFFFFF" stroke-width="3.5" stroke-linecap="round" opacity="0.32" fill="none" />
+        
+        <!-- Petite Sprouting Accent Leaf -->
+        <g transform="scale(0.5) translate(-35, 15) rotate(-35)">
+          <path d="M 0 45 C -45 25 -65 -20 -45 -65 C -25 -110 0 -130 0 -130 C 0 -130 25 -110 45 -65 C 65 -20 45 25 0 45 Z" fill="#2DD4BF" opacity="0.9" />
+          <path d="M 0 45 C 0 15 0 -20 0 -115" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round" opacity="0.4" fill="none" />
+        </g>
       </g>
     </g>
-  </g>
 
-  <!-- Fluttering Leaf 2 (Right - With curved petiole stem) -->
-  <g>
-    <animateMotion path="M 680 -50 C 720 120, 580 260, 680 390 S 550 500, 640 650" dur="12s" repeatCount="indefinite" rotate="auto" />
+    <!-- ==================== RIGHT TYPOGRAPHY: ROLL-UP TRANSITION ==================== -->
+    <!-- 1. MIDORI TEXT GROUP -->
     <g>
-      <animateTransform attributeName="transform" type="rotate" values="360; 0" dur="6s" repeatCount="indefinite" />
-      <g transform="scale(0.9)">
-        <path d="M 0 0 C 8 -10 15 -5 10 5 C 5 12 -5 10 0 0 Z" fill="url(#leafGrad)" opacity="0.3" />
-        <path d="M 0 0 C -1 4 -3 8 -6 10" stroke="url(#mossGrad)" stroke-width="1.0" stroke-linecap="round" fill="none" opacity="0.3" />
-      </g>
+      <!-- Kinetic Translation Loop -->
+      <animateTransform attributeName="transform" type="translate"
+        values="0 40; 0 0; 0 0; 0 -40; 0 -40; 0 40"
+        dur="8s" repeatCount="indefinite"
+        calcMode="spline" keyTimes="0; 0.05; 0.375; 0.5; 0.875; 1"
+        keySplines="0.4, 0, 0.2, 1; 0.4, 0, 0.2, 1; 0.4, 0, 0.2, 1; 0.4, 0, 0.2, 1; 0.4, 0, 0.2, 1" />
+      
+      <text x="300" y="172" font-family="system-ui, -apple-system, sans-serif" font-size="82" font-weight="900" letter-spacing="16" fill="url(#midoriGrad)">
+        MIDORI
+        <!-- Opacity Cross-Fade Loop -->
+        <animate attributeName="opacity"
+          values="0; 1; 1; 0; 0; 0"
+          dur="8s" repeatCount="indefinite"
+          calcMode="spline" keyTimes="0; 0.05; 0.375; 0.5; 0.875; 1"
+          keySplines="0.4, 0, 0.2, 1; 0.4, 0, 0.2, 1; 0.4, 0, 0.2, 1; 0.4, 0, 0.2, 1; 0.4, 0, 0.2, 1" />
+      </text>
     </g>
-  </g>
 
-
-  <!-- ==================== LAYER 8: BIOLUMINESCENT DRIFTING SPORES ==================== -->
-  <!-- Spores/Fireflies drifting slowly up through the canopy along wave paths -->
-  <!-- Spore 1 (Gold, left-center) -->
-  <g filter="url(#sporeGlow)" opacity="0.8">
-    <circle cx="0" cy="0" r="3.5" fill="#fef08a" />
-    <animateMotion path="M 220 580 C 180 480, 260 380, 210 260 S 160 120, 200 -50" dur="18s" repeatCount="indefinite" />
-    <animate attributeName="opacity" values="0.2; 1; 0.7; 1; 0.2" dur="6s" repeatCount="indefinite" />
-  </g>
-
-  <!-- Spore 2 (Mint, center-right) -->
-  <g filter="url(#sporeGlow)" opacity="0.75">
-    <circle cx="0" cy="0" r="4" fill="#a7f3d0" />
-    <animateMotion path="M 480 580 C 520 450, 440 330, 490 200 S 540 80, 470 -50" dur="20s" repeatCount="indefinite" />
-    <animate attributeName="opacity" values="0.1; 0.9; 0.3; 0.9; 0.1" dur="8s" repeatCount="indefinite" />
-  </g>
-
-  <!-- Spore 3 (Gold, far left) -->
-  <g filter="url(#sporeGlow)" opacity="0.7">
-    <circle cx="0" cy="0" r="2.8" fill="#fef08a" />
-    <animateMotion path="M 60 580 C 100 480, 40 360, 80 240 S 120 100, 70 -50" dur="16s" repeatCount="indefinite" />
-  </g>
-
-  <!-- Spore 4 (Mint, far right) -->
-  <g filter="url(#sporeGlow)" opacity="0.85">
-    <circle cx="0" cy="0" r="3.2" fill="#a7f3d0" />
-    <animateMotion path="M 720 580 C 670 490, 750 380, 710 280 S 680 120, 740 -50" dur="15s" repeatCount="indefinite" />
+    <!-- 2. LEAFY LEDGER TEXT GROUP -->
+    <g>
+      <!-- Kinetic Translation Loop (offset phase) -->
+      <animateTransform attributeName="transform" type="translate"
+        values="0 -40; 0 40; 0 40; 0 0; 0 0; 0 -40"
+        dur="8s" repeatCount="indefinite"
+        calcMode="spline" keyTimes="0; 0.05; 0.375; 0.5; 0.875; 1"
+        keySplines="0.4, 0, 0.2, 1; 0.4, 0, 0.2, 1; 0.4, 0, 0.2, 1; 0.4, 0, 0.2, 1; 0.4, 0, 0.2, 1" />
+      
+      <text x="300" y="172" font-family="system-ui, -apple-system, sans-serif" font-size="76" font-weight="800" letter-spacing="4" fill="url(#leafyGrad)">
+        Leafy Ledger
+        <!-- Opacity Cross-Fade Loop (offset phase) -->
+        <animate attributeName="opacity"
+          values="0; 0; 0; 1; 1; 0"
+          dur="8s" repeatCount="indefinite"
+          calcMode="spline" keyTimes="0; 0.05; 0.375; 0.5; 0.875; 1"
+          keySplines="0.4, 0, 0.2, 1; 0.4, 0, 0.2, 1; 0.4, 0, 0.2, 1; 0.4, 0, 0.2, 1; 0.4, 0, 0.2, 1" />
+      </text>
+    </g>
+    
   </g>
 </svg>

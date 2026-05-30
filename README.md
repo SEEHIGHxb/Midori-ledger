@@ -1,7 +1,7 @@
 # Midori — Leafy Ledger 🍃
 
 <p align="center">
-  <img src="image/midori-transparent.png" alt="Midori — Leafy Ledger" width="540"/>
+  <img src="image/midori-animation.svg" alt="Midori — Leafy Ledger" width="680"/>
 </p>
 
 Midori (緑) is a premium, feature-rich personal finance ledger themed around modern, secure, and offline-first "Leafy Ledger" design principles. It runs entirely in the browser as a client-side Single Page Application (SPA), utilizing standard HTML5, CSS3, and JavaScript, with local data persistence via browser `localStorage`. 
