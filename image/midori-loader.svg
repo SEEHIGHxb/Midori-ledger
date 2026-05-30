@@ -1,18 +1,17 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="100%" height="100%">
   <!-- Definitions for gradients, filters, and clips -->
   <defs>
-    <!-- Premium Japanese Green Gradient (Leaf) -->
-    <linearGradient id="leafGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#34D399" />   <!-- Bright Emerald -->
-      <stop offset="50%" stop-color="#10B981" />  <!-- Medium Emerald -->
-      <stop offset="100%" stop-color="#047857" /> <!-- Deep Forest Green -->
+    <!-- Clover Foliage Gradient -->
+    <linearGradient id="cloverGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#047857" />   <!-- Deep Forest Green -->
+      <stop offset="50%" stop-color="#10B981" />  <!-- Vibrant Emerald -->
+      <stop offset="100%" stop-color="#34D399" /> <!-- Premium Mint Green -->
     </linearGradient>
 
-    <!-- Metallic Gold Gradient (Coin) -->
-    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#FCD34D" />   <!-- Light Gold -->
-      <stop offset="50%" stop-color="#F59E0B" />  <!-- Warm Amber Gold -->
-      <stop offset="100%" stop-color="#D97706" /> <!-- Deep Bronze Gold -->
+    <!-- Stem & Stalk Gradient -->
+    <linearGradient id="stemGrad" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" stop-color="#045a43" />
+      <stop offset="100%" stop-color="#10B981" />
     </linearGradient>
 
     <!-- Soft Glow Filter -->
@@ -20,127 +19,92 @@
       <feGaussianBlur stdDeviation="6" result="blur" />
       <feComposite in="SourceGraphic" in2="blur" operator="over" />
     </filter>
-
-    <!-- Go-en Coin True Transparent Cutout Mask (Lead Designer Subtraction Technique) -->
-    <mask id="coinHole">
-      <rect x="-50" y="-50" width="100" height="100" fill="#ffffff" />
-      <rect x="-4" y="-4" width="8" height="8" rx="1" fill="#000000" />
-    </mask>
   </defs>
 
-  <!-- 1. Background Pulsing Ripples (SMIL animated circles) -->
+  <!-- 1. Background Pulsing Green Ripples (Calming loading indicators) -->
   <circle cx="100" cy="100" r="20" fill="none" stroke="#10B981" stroke-width="1" opacity="0">
     <animate attributeName="r" values="20;75" dur="3s" repeatCount="indefinite"
              calcMode="spline" keyTimes="0;1" keySplines="0.16, 1, 0.3, 1" />
-    <animate attributeName="opacity" values="0.6;0" dur="3s" repeatCount="indefinite"
+    <animate attributeName="opacity" values="0.5;0" dur="3s" repeatCount="indefinite"
              calcMode="spline" keyTimes="0;1" keySplines="0.16, 1, 0.3, 1" />
   </circle>
   
   <circle cx="100" cy="100" r="20" fill="none" stroke="#34D399" stroke-width="1.5" opacity="0">
     <animate attributeName="r" values="20;75" dur="3s" begin="1.5s" repeatCount="indefinite"
              calcMode="spline" keyTimes="0;1" keySplines="0.16, 1, 0.3, 1" />
-    <animate attributeName="opacity" values="0.6;0" dur="3s" begin="1.5s" repeatCount="indefinite"
+    <animate attributeName="opacity" values="0.5;0" dur="3s" begin="1.5s" repeatCount="indefinite"
              calcMode="spline" keyTimes="0;1" keySplines="0.16, 1, 0.3, 1" />
   </circle>
 
-  <!-- 2. Central Japanese "Midori" Leaf (Sways and hovers) -->
-  <g transform="translate(100, 100)">
-    <!-- Sway & Hover Animation on Group -->
+  <!-- 2. Central Miniature 4-Leaf Clover (Breathes and sways) -->
+  <!-- Anchored at the base of its stalk at (100, 140) -->
+  <g transform="translate(100, 140)">
+    
+    <!-- Gentle, natural sway and breathing pulse loop -->
     <animateTransform 
       attributeName="transform" 
-      type="translate" 
-      values="100,103; 100,97; 100,103" 
-      dur="4s" 
+      type="rotate" 
+      values="-4; 4; -4" 
+      dur="5s" 
       repeatCount="indefinite" 
       calcMode="spline" 
       keyTimes="0; 0.5; 1" 
       keySplines="0.4, 0, 0.2, 1; 0.4, 0, 0.2, 1" additive="sum" />
-      
+
     <g>
+      <!-- Slow, organic breathing scale pulse -->
       <animateTransform 
         attributeName="transform" 
-        type="rotate" 
-        values="-2; 4; -2" 
-        dur="6s" 
+        type="scale" 
+        values="0.95; 1.05; 0.95" 
+        dur="4s" 
         repeatCount="indefinite" 
         calcMode="spline" 
         keyTimes="0; 0.5; 1" 
         keySplines="0.4, 0, 0.2, 1; 0.4, 0, 0.2, 1" />
 
-      <!-- Stylized premium leaf path -->
-      <path d="M 0,-40 
-               C 25,-20 35,10 0,40 
-               C -35,10 -25,-20 0,-40 Z" 
-            fill="url(#leafGrad)" 
-            filter="url(#glow)" />
-      
-      <!-- Leaf Vein (Dynamic line drawing / opacity breathe) -->
-      <path d="M 0,-30 C 0,-10 0,10 0,35" 
-            stroke="#ffffff" 
-            stroke-width="1.5" 
-            stroke-linecap="round" 
-            opacity="0.3">
-        <animate attributeName="opacity" values="0.2;0.5;0.2" dur="4s" repeatCount="indefinite" />
-      </path>
-      
-      <!-- Subtle side veins -->
-      <path d="M 0,-15 Q 12,-20 18,-15 M 0,-2 Q 15,-5 20,2 M 0,10 Q 10,10 15,18" 
-            stroke="#ffffff" stroke-width="1" stroke-linecap="round" opacity="0.2" />
-      <path d="M 0,-15 Q -12,-20 -18,-15 M 0,-2 Q -15,-5 -20,2 M 0,10 Q -10,10 -15,18" 
-            stroke="#ffffff" stroke-width="1" stroke-linecap="round" opacity="0.2" />
-    </g>
-  </g>
+      <!-- Curved Clover Stalk -->
+      <path d="M 0 0 C 4 -12 -2 -25 0 -40" stroke="url(#stemGrad)" stroke-width="2.5" stroke-linecap="round" fill="none" />
 
-  <!-- 3. Floating, 3D-Spinning Gold Coin (Centered orbit nesting for browser compatibility) -->
-  <g transform="translate(100, 100)">
-    <!-- Orbits around the leaf in an elliptical motion relative to centered origin -->
-    <g>
-      <animateTransform 
-        attributeName="transform" 
-        type="translate" 
-        values="0,-40; 40,0; 0,40; -40,0; 0,-40" 
-        dur="8s" 
-        repeatCount="indefinite" 
-        calcMode="spline" 
-        keyTimes="0; 0.25; 0.5; 0.75; 1" 
-        keySplines="0.4, 0, 0.2, 1; 0.4, 0, 0.2, 1; 0.4, 0, 0.2, 1; 0.4, 0, 0.2, 1" />
+      <!-- The 4 leaflets centered at the top of the stalk (0, -40) -->
+      <g transform="translate(0, -40)">
         
-      <!-- Coin container handles 3D scale cycle -->
-      <g>
-        <animateTransform 
-          attributeName="transform" 
-          type="scale" 
-          values="0.8 0.8; 0.05 0.8; -0.8 0.8; 0.05 0.8; 0.8 0.8" 
-          dur="2.5s" 
-          repeatCount="indefinite" 
-          calcMode="spline"
-          keyTimes="0; 0.25; 0.5; 0.75; 1"
-          keySplines="0.4, 0, 0.2, 1; 0.4, 0, 0.2, 1; 0.4, 0, 0.2, 1; 0.4, 0, 0.2, 1" />
+        <!-- Leaflet 1 (Top, 0 deg) -->
+        <g transform="rotate(0)">
+          <path d="M 0 0 C -6 -11 -14 -9 -12 2 C -10 10 -3 4 0 0 C 3 4 10 10 12 2 C 14 -9 6 -11 0 0 Z" fill="url(#cloverGrad)" filter="url(#glow)" />
+          <path d="M 0 0 L 0 -8" stroke="#ffffff" stroke-width="0.8" opacity="0.4" stroke-linecap="round" />
+        </g>
 
-        <!-- The Gold Coin (With transparent cutout mask) -->
-        <circle cx="0" cy="0" r="16" fill="url(#goldGrad)" stroke="#FBBF24" stroke-width="1" filter="url(#glow)" mask="url(#coinHole)" />
-        
-        <!-- Inner coin border (With transparent cutout mask) -->
-        <circle cx="0" cy="0" r="12" fill="none" stroke="#F59E0B" stroke-width="0.8" stroke-dasharray="2,2" mask="url(#coinHole)" />
-        
-        <!-- Central Square Hole Border Outline (Only stroke, transparent fill) -->
-        <rect x="-4" y="-4" width="8" height="8" fill="none" stroke="#F59E0B" stroke-width="0.8" rx="1" />
+        <!-- Leaflet 2 (Right, 90 deg) -->
+        <g transform="rotate(90)">
+          <path d="M 0 0 C -6 -11 -14 -9 -12 2 C -10 10 -3 4 0 0 C 3 4 10 10 12 2 C 14 -9 6 -11 0 0 Z" fill="url(#cloverGrad)" filter="url(#glow)" />
+          <path d="M 0 0 L 0 -8" stroke="#ffffff" stroke-width="0.8" opacity="0.4" stroke-linecap="round" />
+        </g>
+
+        <!-- Leaflet 3 (Bottom, 180 deg) -->
+        <g transform="rotate(180)">
+          <path d="M 0 0 C -6 -11 -14 -9 -12 2 C -10 10 -3 4 0 0 C 3 4 10 10 12 2 C 14 -9 6 -11 0 0 Z" fill="url(#cloverGrad)" filter="url(#glow)" />
+          <path d="M 0 0 L 0 -8" stroke="#ffffff" stroke-width="0.8" opacity="0.4" stroke-linecap="round" />
+        </g>
+
+        <!-- Leaflet 4 (Left, 270 deg) -->
+        <g transform="rotate(270)">
+          <path d="M 0 0 C -6 -11 -14 -9 -12 2 C -10 10 -3 4 0 0 C 3 4 10 10 12 2 C 14 -9 6 -11 0 0 Z" fill="url(#cloverGrad)" filter="url(#glow)" />
+          <path d="M 0 0 L 0 -8" stroke="#ffffff" stroke-width="0.8" opacity="0.4" stroke-linecap="round" />
+        </g>
       </g>
     </g>
   </g>
 
-  <!-- 4. Floating glowing sparkles -->
-  <g opacity="0.8">
-    <circle cx="50" cy="60" r="1.5" fill="#FCD34D">
+  <!-- 3. Floating glowing sparkles -->
+  <g opacity="0.6">
+    <circle cx="50" cy="60" r="1" fill="#34D399">
       <animate attributeName="opacity" values="0.2;1;0.2" dur="3s" repeatCount="indefinite" />
       <animate attributeName="cy" values="60;45;60" dur="5s" repeatCount="indefinite" />
     </circle>
-    <circle cx="150" cy="140" r="2" fill="#34D399">
+    <circle cx="150" cy="140" r="1.2" fill="#10B981">
       <animate attributeName="opacity" values="0.1;0.9;0.1" dur="4s" repeatCount="indefinite" />
       <animate attributeName="cy" values="140;155;140" dur="6s" repeatCount="indefinite" />
-    </circle>
-    <circle cx="160" cy="50" r="1" fill="#ffffff">
-      <animate attributeName="opacity" values="0.8;0.2;0.8" dur="2s" repeatCount="indefinite" />
     </circle>
   </g>
 </svg>
